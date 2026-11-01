@@ -1,6 +1,22 @@
 # Codex Usage Dashboard
 
+**English** | [ภาษาไทย](README.th.md)
+
 A self-hosted Discord Components V2 dashboard for OpenAI Codex usage. It reads usage through an existing [Hermes Agent](https://github.com/NousResearch/hermes-agent) installation and updates one pinned Discord message.
+
+## Preview
+
+### Main dashboard
+
+![Illustrative dashboard mockup with synthetic values; not a Discord screenshot](docs/previews/dashboard-example.png)
+
+**Illustrative mockup, not a Discord screenshot.** All values and dates are synthetic. Actual Discord styling and localized timestamps may differ. The provider selector, quota sections and Refresh/History controls reflect the current UI.
+
+### Weekly history
+
+![Weekly Usage rendered by the project with synthetic observations](docs/previews/history-example.png)
+
+**Synthetic data rendered by the actual project renderer**, not real account history. This example includes an ordinary missing-data gap, a confirmed-reset interpolation bridge, and blank future time. History appears in a private ephemeral reply with `← Previous 7 days` and `Next 7 days →` controls (not included in this chart image). Calendar boundaries use **Asia/Bangkok**; UI and chart labels remain English in both language guides.
 
 ## Features
 
@@ -50,6 +66,15 @@ chmod 600 .env
 ```
 
 Edit `.env` locally. Never commit it or paste a bot token into chat, an issue or a log.
+
+Minimal configuration example (replace both placeholders with your own numeric Discord IDs):
+
+```dotenv
+DASHBOARD_CHANNEL_ID=YOUR_CHANNEL_ID
+DASHBOARD_ALLOWED_USERS=YOUR_USER_ID
+```
+
+By default the bot token is read from `$HERMES_HOME/.env` (or `$HOME/.hermes/.env`). For a separate bot, set `DISCORD_BOT_TOKEN` securely in the local dashboard `.env`. Do not put the literal placeholder IDs into production.
 
 ### Configuration
 
@@ -105,7 +130,7 @@ The sample assumes the checkout is `~/codex-usage-dashboard` and includes `~/.lo
 
 ## Data and privacy
 
-- `.env`, `data/`, logs, SQLite files and generated previews are ignored by Git.
+- `.env`, `data/`, logs, SQLite files and private generated previews are ignored by Git. Intentionally public synthetic examples under `docs/previews/` are included in the repository.
 - State, current usage and history are written with private permissions under the process umask.
 - History stores an opaque effective-account fingerprint, timestamps, reset anchors and raw weekly usage percentages. It does not store tokens or account IDs.
 - History responses are ephemeral and bound to the requesting user, provider, account, channel and exact reply.
@@ -130,6 +155,24 @@ npm audit --omit=dev
 ```
 
 Node tests use isolated temporary databases and mocked Discord calls. Python adapter tests mock network and credential access. No test publishes a Discord message or makes a live reset request.
+
+## Limitations and service management
+
+- Only OpenAI Codex usage is connected. Claude and Gemini options are Coming soon, not active integrations.
+- History uses seven-calendar-day windows in Asia/Bangkok, not the viewer's local timezone.
+- A new installation starts with no history; missing observations are never backfilled with invented data.
+- Hermes internal adapter APIs can change. Run the read-only check after updating Hermes; this project does not modify or restart the Hermes gateway.
+- No GitHub Actions workflows are included. Run the documented local tests yourself.
+
+```bash
+systemctl --user stop codex-usage-dashboard.service
+systemctl --user start codex-usage-dashboard.service
+systemctl --user restart codex-usage-dashboard.service
+systemctl --user status codex-usage-dashboard.service --no-pager
+journalctl --user -u codex-usage-dashboard.service -f
+```
+
+Journal access depends on the host. Restart only this dashboard after configuration changes; do not change the channel while retaining state for another channel. Run only one instance against a given state file.
 
 ## License
 
