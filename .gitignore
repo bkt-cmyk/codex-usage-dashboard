@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+!.env.example
+data/
+*.log
+*.sqlite
+*.sqlite-*
+__pycache__/
+*.py[cod]
+coverage/
+.DS_Store

@@ -1,0 +1,19 @@
+[Unit]
+Description=Codex usage dashboard for Discord
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/codex-usage-dashboard
+EnvironmentFile=%h/codex-usage-dashboard/.env
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/usr/bin/env node %h/codex-usage-dashboard/src/main.js
+Restart=on-failure
+RestartSec=15
+NoNewPrivileges=true
+PrivateTmp=true
+UMask=0077
+
+[Install]
+WantedBy=default.target

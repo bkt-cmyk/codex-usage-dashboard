@@ -1,0 +1,21 @@
+{
+  "name": "codex-usage-dashboard",
+  "version": "1.0.0",
+  "description": "A private, self-hosted Discord Components V2 dashboard for OpenAI Codex usage through Hermes Agent.",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "start": "node src/main.js",
+    "check": "node src/main.js --check",
+    "publish": "node src/main.js --publish"
+  },
+  "engines": {
+    "node": ">=22.13"
+  },
+  "dependencies": {
+    "discord.js": "14.28.0",
+    "dotenv": "18.0.9"
+  }
+}
