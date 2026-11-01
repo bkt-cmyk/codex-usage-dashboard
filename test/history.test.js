@@ -2,13 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtempSync,statSync,rmSync} from 'node:fs';
 import {join} from 'node:path';
+import {tmpdir} from 'node:os';
 import {HistoryStore} from '../src/history-store.js';
 import {historyWeek,renderHistoryPng} from '../src/history-chart.js';
 import {inflateSync,crc32} from 'node:zlib';
 import {DatabaseSync} from 'node:sqlite';
 const account='a'.repeat(64),now=Date.parse('2026-10-13T12:00:00Z'),day=86400000;
 const usage=(used=21,at=now,reset=now+day)=>({provider:'openai-codex',accountFingerprint:account,fetchedAt:new Date(at).toISOString(),windows:[{name:'Weekly Limit',used,resetsAt:new Date(reset).toISOString()}]});
-async function fixture(fn){const dir=mkdtempSync(join(process.env.TMPDIR,'history-test-'));try{await fn(join(dir,'history.sqlite'));}finally{rmSync(dir,{recursive:true,force:true});}}
+async function fixture(fn){const dir=mkdtempSync(join(tmpdir(),'history-test-'));try{await fn(join(dir,'history.sqlite'));}finally{rmSync(dir,{recursive:true,force:true});}}
 test('account isolation fails closed, cached observations deduplicate, and 90-day retention prunes',async()=>{
  await fixture(async path=>{const s=new HistoryStore(path,()=>now);s.record(usage(10,now-91*day));s.record(usage());s.record(usage());s.record({...usage(),accountFingerprint:'b'.repeat(64)});for(const bad of [null,'wrong'])assert.equal(s.record({...usage(),accountFingerprint:bad}),false);assert.equal(s.record({...usage(),unavailable:true}),false);assert.equal(s.record(usage(NaN)),false);assert.equal(s.list('openai-codex',account).length,1);assert.equal(s.list('openai-codex','b'.repeat(64)).length,1);assert.deepEqual(s.list('openai-codex',null),[]);s.close();});
 });
